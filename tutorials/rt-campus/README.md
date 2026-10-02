@@ -1,5 +1,35 @@
 # Running the campus notebooks in VS Code
 
+## LoRa network simulation: PDR, latency, RSSI, SNR
+
+Open [3_lora_network_sim.ipynb](3_lora_network_sim.ipynb) and **Run All**. It places
+N LoRa end nodes (and gateways, or peer destinations) on the campus, ray-traces all
+link gains once (cached in `.rt_cache/`), then runs a discrete-event packet
+simulation from [lora_netsim.py](lora_netsim.py). Changing LoRa or traffic settings
+only reruns the fast packet simulation.
+
+- **Variables:** node count and positions (seeded sampling in audited public regions,
+  or your coordinates), topology (`star` / `peer`), SF, bandwidth, coding rate,
+  payload, TX power, channel, traffic period, ACK/retries, duty cycle.
+- **Metrics:** PDR per node and overall, end-to-end latency (mean/p50/p95, including
+  queueing and retries), reported RSSI/SNR, attempts per message, outcome breakdown
+  (collision, below sensitivity, PER loss, half-duplex, busy receiver), channel
+  utilisation, throughput, an energy estimate. Per-message and per-reception CSVs
+  are written to `outputs/`.
+- **Calibration with measurements:** fill [measurements_template.csv](measurements_template.csv)
+  with one row per packet (antenna positions in scene coordinates, reported RSSI/SNR,
+  `received=0` rows for lost packets) and set `MEASUREMENTS_CSV`. The notebook fits
+  same-/cross-floor offsets, shadowing and fading spread, the noise floor and, given
+  lost packets, the PER curve, and reports leave-one-location-out error.
+- **Checks:** `python -m pytest test_lora_netsim.py` (NumPy only) covers airtime,
+  capture/collisions, cross-SF rejection, ACK retries, half-duplex and calibration recovery.
+
+First full run with the defaults (13 sites, 1M rays/source, depth 8, CPU LLVM backend,
+4 cores) took about 5 minutes and peaked near 5 GB RAM; later runs load the cache.
+Reduce `samples_per_src` for a quick look. Even at the default budget about 40% of
+directed links differ by more than 3 dB forward vs reverse, so check that diagnostic
+before trusting weak links, and expect calibration to absorb some ray-sampling noise.
+
 ## D-Link router and three Jetson robots: 2.4 / 5 GHz
 
 Open [2_wifi6_router_jetson_dual_band.ipynb](2_wifi6_router_jetson_dual_band.ipynb),

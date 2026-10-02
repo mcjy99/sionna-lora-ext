@@ -21,3 +21,7 @@ doc/_build
 .cursor
 .claude
 doc/source/rk
+
+# rt-campus LoRa network simulation (ray-tracing cache and run outputs)
+tutorials/rt-campus/.rt_cache/
+tutorials/rt-campus/outputs/
